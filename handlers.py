@@ -16,5 +16,10 @@ async def start_handler(msg: Message):
 
 @router.message()
 async def message_handler(msg: Message):
-
-    await msg.answer("Привет!")
+    input_data = json.loads(msg.text)
+    dt_from = datetime.datetime.strptime(input_data['dt_from'], '%Y-%m-%dT%H:%M:%S')
+    dt_upto = datetime.datetime.strptime(input_data['dt_upto'], '%Y-%m-%dT%H:%M:%S')
+    col_filtered = db.test_col.find({"dt": {"$gte": dt_from, "$lte": dt_upto}}).sort('dt')
+    result = await grouping(col_filtered, input_data['group_type'])
+    json_str = json.dumps(result)
+    await msg.answer(json_str)
